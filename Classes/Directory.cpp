@@ -20,9 +20,9 @@ void Directory::createSubdirectory(string name)
 	}
 }
 
-void Directory::cteateNewFile(string name)
+void Directory::cteateNewFile(string name, int address)
 {
-	File *newFile = new File(name);
+	File *newFile = new File(name, address);
 	if (this->fileList == NULL) this->fileList = newFile;
 	else {
 		File *current = this->fileList;
@@ -51,8 +51,7 @@ void Directory::remove(Directory * current)
 {
 	if (current != NULL) {
 		while (current->fileList != NULL) current->deleteFile(current->fileList->getName());
-		remove(current->child);
-		remove(current->sibling);
+		while (current->child != NULL) current->deleteSubdirectory(current->child->getName());
 		delete current;
 	}
 }

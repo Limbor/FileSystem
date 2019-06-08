@@ -17,7 +17,7 @@ public:
 	void setName(string name) { this->name = name; }
 	string getName() { return this->name; }
 	void createSubdirectory(string name);
-	void cteateNewFile(string name);
+	void cteateNewFile(string name, int address);
 	void deleteSubdirectory(string name);
 	void remove(Directory *current);
 	void deleteFile(string name);

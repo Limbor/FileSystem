@@ -3,7 +3,7 @@
 
 #include "cocos2d.h"
 #include "FileSystem.h"
-#include "extensions\cocos-ext.h"
+#include "ui\CocosGUI.h"
 
 class DirectoryScene : public cocos2d::Scene,cocos2d::ui::EditBoxDelegate
 {

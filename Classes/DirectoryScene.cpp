@@ -1,6 +1,6 @@
 #include "DirectoryScene.h"
 #include "SimpleAudioEngine.h"
-#include "ui/CocosGUI.h"
+#include "EditScene.h"
 
 USING_NS_CC;
 
@@ -47,10 +47,17 @@ void DirectoryScene::enemyInit(FileSystem * fs)
 	initDirectory();
 	initFile();
 
-	auto title = Label::createWithSystemFont(this->fs->getPath(), "Arial", 50);
-	title->setTextColor(Color4B::RED);
+	
+	auto title = Label::createWithSystemFont(this->fs->getPath(), "Arial", 40);
+	title->setTextColor(Color4B::GRAY);
 	title->setPosition(400, 750);
 	this->addChild(title);
+	auto line1 = DrawNode::create();
+	line1->drawLine(Vec2(0, 730), Vec2(824, 730), Color4F::BLACK);
+	this->addChild(line1);
+	auto line2 = DrawNode::create();
+	line2->drawLine(Vec2(0, 768), Vec2(824, 768), Color4F::BLACK);
+	this->addChild(line2);
 
 	createMenu();
 
@@ -88,9 +95,12 @@ void DirectoryScene::createMenu()
 	menu->setTag(0);
 
 	auto label = Label::createWithSystemFont("Menu", "Arial", 25);
-	label->setTextColor(Color4B::RED);
+	label->setTextColor(Color4B::GRAY);
 	label->setPosition(50, 750);
 	menu->addChild(label);
+	auto line = DrawNode::create();
+	line->drawLine(Vec2(824, 730), Vec2(1024, 730), Color4F::BLACK);
+	this->addChild(line);
 
 	auto newFolder = ui::Button::create("nFolder.png");
 	newFolder->setPosition(Vec2(47, 690));
@@ -101,12 +111,14 @@ void DirectoryScene::createMenu()
 		}
 		if (hasEditedName) {
 			createFolder(this->currentName);
+			fs->createSubdirectory(this->currentName);
+			hasEditedName = false;
 		}
 	});
 	menu->addChild(newFolder);
 	auto label1 = Label::createWithSystemFont("New Folder", "Arial", 18);
 	label1->setTextColor(Color4B::BLACK);
-	label1->setPosition(45, 640);
+	label1->setPosition(47, 640);
 	menu->addChild(label1);
 
 	auto newFile = ui::Button::create("nFile.png");
@@ -118,6 +130,8 @@ void DirectoryScene::createMenu()
 		}
 		if (hasEditedName) {
 			createFile(this->currentName);
+			fs->cteateNewFile(this->currentName);
+			hasEditedName = false;
 		}
 	});
 	menu->addChild(newFile);
@@ -127,7 +141,7 @@ void DirectoryScene::createMenu()
 	menu->addChild(label2);
 
 	auto openFolder = ui::Button::create("oFolder.png");
-	openFolder->setPosition(Vec2(47, 500));
+	openFolder->setPosition(Vec2(47, 510));
 	openFolder->addClickEventListener([&](Ref *psender) {
 		if (selected != NULL) {
 			int tag = selected->getTag();
@@ -141,37 +155,40 @@ void DirectoryScene::createMenu()
 		}
 	});
 	menu->addChild(openFolder);
-	auto label3 = Label::createWithSystemFont("Open Folder", "Arial", 18);
+	auto label3 = Label::createWithSystemFont(" Open \nFolder", "Arial", 18);
 	label3->setTextColor(Color4B::BLACK);
 	label3->setPosition(50, 440);
 	menu->addChild(label3);
 
 	auto openFile = ui::Button::create("oFile.png");
-	openFile->setPosition(Vec2(145, 500));
+	openFile->setPosition(Vec2(145, 510));
 	openFile->addClickEventListener([&](Ref *psender) {
 		if (selected != NULL) {
 			int tag = selected->getTag();
 			int i = (tag - 1) / 5;
 			int j = tag % 5 - 1;
 			if (content[i][j] == FILE) {
-				selected->setVisible(false);
+				File *file = fs->current->searchFile(selected->getName());
+				auto scene = EditScene::createScene(this->fs, file);
+				Director::getInstance()->replaceScene(scene);
 			}
 		}
 	});
 	menu->addChild(openFile);
-	auto label4 = Label::createWithSystemFont("Open File", "Arial", 18);
+	auto label4 = Label::createWithSystemFont("Open\nFile", "Arial", 18);
 	label4->setTextColor(Color4B::BLACK);
 	label4->setPosition(145, 440);
 	menu->addChild(label4);
 
 	auto deleteFolder = ui::Button::create("dFolder.png");
-	deleteFolder->setPosition(Vec2(45, 350));
+	deleteFolder->setPosition(Vec2(45, 360));
 	deleteFolder->addClickEventListener([&](Ref *psender) {
 		if (selected != NULL) {
 			int tag = selected->getTag();
 			int i = (tag - 1) / 5;
 			int j = tag % 5 - 1;
 			if (content[i][j] == FOLDER) {
+				fs->deleteSubdirectory(selected->getName());
 				selected->removeFromParent();
 				selected = NULL;
 				content[i][j] = 0;
@@ -181,17 +198,18 @@ void DirectoryScene::createMenu()
 	menu->addChild(deleteFolder);
 	auto label5 = Label::createWithSystemFont("Delete\nFolder", "Arial", 18);
 	label5->setTextColor(Color4B::BLACK);
-	label5->setPosition(45, 280);
+	label5->setPosition(45, 290);
 	menu->addChild(label5);
 
 	auto deleteFile = ui::Button::create("dFile.png");
-	deleteFile->setPosition(Vec2(145, 350));
+	deleteFile->setPosition(Vec2(145, 360));
 	deleteFile->addClickEventListener([&](Ref *psender) {
 		if (selected != NULL) {
 			int tag = selected->getTag();
 			int i = (tag - 1) / 5;
 			int j = tag % 5 - 1;
 			if (content[i][j] == FILE) {
+				fs->deleteFile(selected->getName());
 				selected->removeFromParent();
 				selected = NULL;
 				content[i][j] = 0;
@@ -199,13 +217,52 @@ void DirectoryScene::createMenu()
 		}
 	});
 	menu->addChild(deleteFile);
-	auto label6 = Label::createWithSystemFont("Delete\nFile", "Arial", 18);
+	auto label6 = Label::createWithSystemFont("Delete\n File", "Arial", 18);
 	label6->setTextColor(Color4B::BLACK);
-	label6->setPosition(145, 280);
+	label6->setPosition(145, 290);
 	menu->addChild(label6);
 
+	auto formatCurrent = ui::Button::create("clean.png");
+	formatCurrent->setPosition(Vec2(45, 210));
+	formatCurrent->addClickEventListener([&](Ref *psender) {
+		this->fs->format(fs->current);
+		auto scene = DirectoryScene::createScene(this->fs);
+		Director::getInstance()->replaceScene(scene);
+	});
+	menu->addChild(formatCurrent);
+	auto label7 = Label::createWithSystemFont(" Clean \nCurrent", "Arial", 18);
+	label7->setTextColor(Color4B::BLACK);
+	label7->setPosition(45, 140);
+	menu->addChild(label7);
+
+	auto formatAll = ui::Button::create("cleanup.png");
+	formatAll->setPosition(Vec2(145, 210));
+	formatAll->addClickEventListener([&](Ref *psender) {
+		this->fs->format(fs->root);
+		this->fs->current = this->fs->root;
+		auto scene = DirectoryScene::createScene(this->fs);
+		Director::getInstance()->replaceScene(scene);
+	});
+	menu->addChild(formatAll);
+	auto label8 = Label::createWithSystemFont("Clean\n All", "Arial", 18);
+	label8->setTextColor(Color4B::BLACK);
+	label8->setPosition(145, 140);
+	menu->addChild(label8);
+
+	auto refresh = ui::Button::create("refresh.png");
+	refresh->setPosition(Vec2(45, 70));
+	refresh->addClickEventListener([&](Ref *psender) {
+		auto scene = DirectoryScene::createScene(this->fs);
+		Director::getInstance()->replaceScene(scene);
+	});
+	menu->addChild(refresh);
+	auto label9 = Label::createWithSystemFont("Refresh", "Arial", 18);
+	label9->setTextColor(Color4B::BLACK);
+	label9->setPosition(45, 20 );
+	menu->addChild(label9);
+
 	auto back = ui::Button::create("return.png");
-	back->setPosition(Vec2(145, 100));
+	back->setPosition(Vec2(145, 70));
 	back->addClickEventListener([&](Ref *psender) {
 		if (fs->back() != NULL) {
 			fs->current = fs->back();
@@ -214,10 +271,10 @@ void DirectoryScene::createMenu()
 		}
 	});
 	menu->addChild(back);
-	auto label7 = Label::createWithSystemFont("Return", "Arial", 18);
-	label7->setTextColor(Color4B::BLACK);
-	label7->setPosition(145, 50);
-	menu->addChild(label7);
+	auto label10 = Label::createWithSystemFont("Return", "Arial", 18);
+	label10->setTextColor(Color4B::BLACK);
+	label10->setPosition(145, 20);
+	menu->addChild(label10);
 
 	this->addChild(menu);
 	createEditNameBox();
@@ -234,7 +291,8 @@ void DirectoryScene::createEditNameBox()
 	editName->setPlaceholderFontSize(18);
 	editName->setPlaceHolder("Input Name");
 	editName->setPlaceholderFontColor(Color4B::RED);
-	editName->setMaxLength(20);
+	editName->setMaxLength(10);
+	editName->setInputMode(ui::EditBox::InputMode::SINGLE_LINE);
 	editName->setDelegate(this);
 	DrawNode *m = (DrawNode*)this->getChildByTag(0);
 	m->addChild(editName);
@@ -266,7 +324,7 @@ void DirectoryScene::onMouseDown(Event *event)
 	int x = point.x;
 	int y = point.y;
 	int i = (670 - y) / 150;
-	int j = (x - 100) / 150;
+	int j = (x - 50) / 150;
 	if (i >= 5 || j >= 5) return;
 	if (content[i][j] != 0) {
 		if (selected != NULL) selected->setScale((float)0.80);
@@ -292,9 +350,6 @@ void DirectoryScene::createFolder(std::string name)
 				txtName->setPosition(65, 10);
 				folder->addChild(txtName);
 				this->addChild(folder);
-
-				fs->current->createSubdirectory(name);
-				hasEditedName = false;
 				return;
 			}
 		}
@@ -316,9 +371,6 @@ void DirectoryScene::createFile(std::string name)
 				txtName->setPosition(65, 10);
 				file->addChild(txtName);
 				this->addChild(file);
-
-				fs->current->cteateNewFile(name);
-				hasEditedName = false;
 				return;
 			}
 		}

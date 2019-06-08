@@ -11,12 +11,13 @@ private:
 	string name;
 	int address;
 	int length;
+
 	File *nextFile;
 public:
 	friend class Directory;
 	friend class FileSystem;
-	File(string name) :name(name), length(0),
-		address(0), nextFile(NULL) {};
+	File(string name, int address) :name(name), length(1),
+		address(address), nextFile(NULL) {};
 	void setName(string name) { this->name = name; }
 	string getName() { return name; }
 	void setLength(int length) { this->length = length; }
