@@ -28,6 +28,7 @@ void EditScene::enemyInit(FileSystem * fs, File *file)
 {
 	this->fs = fs;
 	this->file = file;
+	oldContent = fs->getContent(file);
 
 	auto background = LayerColor::create(Color4B::WHITE);
 	this->addChild(background);
@@ -43,8 +44,9 @@ void EditScene::enemyInit(FileSystem * fs, File *file)
 	line2->drawLine(Vec2(0, 768), Vec2(1024, 768), Color4F::BLACK);
 	this->addChild(line2);
 
+	editContent = oldContent;
 	editBox = ui::EditBox::create(Size(800, 600), "editbox.png");
-	editBox->setText(fs->getContent(file).c_str());
+	editBox->setText(oldContent.c_str());
 	editBox->setInputMode(ui::EditBox::InputMode::ANY);
 	editBox->setFontName("Arial");
 	editBox->setPosition(Vec2(450, 400));
@@ -53,19 +55,42 @@ void EditScene::enemyInit(FileSystem * fs, File *file)
 	editBox->setDelegate(this);
 	this->addChild(editBox);
 
-	auto back = ui::Button::create("return.png");
-	back->setPosition(Vec2(900, 70));
-	back->addClickEventListener([&](Ref *psender) {
-		this->fs->setContent(this->file, this->content);
+	auto hint = Label::createWithSystemFont("Click to view the contents of the file",
+		"Arial", 40);
+	hint->setTextColor(Color4B::GRAY);
+	hint->setPosition(450, 400);
+	this->addChild(hint);
+
+	auto save = ui::Button::create("save.png");
+	save->setPosition(Vec2(950, 200));
+	save->addClickEventListener([&](Ref *psender) {
+		this->fs->setContent(this->file, this->editContent);
 		auto scene = DirectoryScene::createScene(this->fs);
 		Director::getInstance()->replaceScene(scene);
 	});
-	this->addChild(back);
+	this->addChild(save);
+	auto label1 = Label::createWithSystemFont("Save", "Arial", 18);
+	label1->setTextColor(Color4B::BLACK);
+	label1->setPosition(950, 140);
+	this->addChild(label1);
+
+	auto cancel = ui::Button::create("cancel.png");
+	cancel->setPosition(Vec2(950, 70));
+	cancel->addClickEventListener([&](Ref *psender) {
+		this->fs->setContent(this->file, this->oldContent);
+		auto scene = DirectoryScene::createScene(this->fs);
+		Director::getInstance()->replaceScene(scene);
+	});
+	this->addChild(cancel);
+	auto label2 = Label::createWithSystemFont("Cancel", "Arial", 18);
+	label2->setTextColor(Color4B::BLACK);
+	label2->setPosition(950, 10);
+	this->addChild(label2);
 }
 
 void EditScene::editBoxTextChanged(cocos2d::ui::EditBox * editBox, const std::string & text)
 {
-	this->content = text;
+	this->editContent = text;
 }
 
 void EditScene::editBoxReturn(cocos2d::ui::EditBox * editBox)

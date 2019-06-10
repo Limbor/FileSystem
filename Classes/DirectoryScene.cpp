@@ -61,6 +61,14 @@ void DirectoryScene::enemyInit(FileSystem * fs)
 
 	createMenu();
 
+	auto exit = ui::Button::create("exit.png");
+	exit->setPosition(Vec2(1004, 750));
+	exit->addClickEventListener([&](Ref *pSender) {
+		if (!this->fs->writeFile()) MessageBox("Save Failed", "Warning");
+		std::exit(0);
+	});
+	this->addChild(exit);
+
 	auto dispatcher = Director::getInstance()->getEventDispatcher();
 	auto mouseListener = EventListenerMouse::create();
 	mouseListener->onMouseDown = CC_CALLBACK_1(DirectoryScene::onMouseDown, this);
@@ -103,45 +111,69 @@ void DirectoryScene::createMenu()
 	this->addChild(line);
 
 	auto newFolder = ui::Button::create("nFolder.png");
-	newFolder->setPosition(Vec2(47, 690));
+	newFolder->setTag(0);
+	newFolder->setPosition(Vec2(50, 690));
 	newFolder->addClickEventListener([&](Ref *pSender) {
 		if (editName != NULL) {
 			editName->removeFromParent();
 			createEditNameBox();
 		}
 		if (hasEditedName) {
+			vector<string> names = this->fs->folderNames();
+			for (vector<string>::iterator i = names.begin(); i != names.end(); i++) {
+				if (*i == this->currentName) {
+					MessageBox("Duplicate Name", "Warning");
+					hasEditedName = false;
+					this->currentName = std::string();
+					return;
+				}
+			}
 			createFolder(this->currentName);
 			fs->createSubdirectory(this->currentName);
 			hasEditedName = false;
+			this->currentName = std::string();
 		}
 	});
 	menu->addChild(newFolder);
 	auto label1 = Label::createWithSystemFont("New Folder", "Arial", 18);
 	label1->setTextColor(Color4B::BLACK);
-	label1->setPosition(47, 640);
+	label1->setPosition(50, 630);
 	menu->addChild(label1);
 
 	auto newFile = ui::Button::create("nFile.png");
-	newFile->setPosition(Vec2(145, 690));
+	newFile->setTag(1);
+	newFile->setPosition(Vec2(150, 690));
 	newFile->addClickEventListener([&](Ref *pSender) {
 		if (editName != NULL) {
 			editName->removeFromParent();
 			createEditNameBox();
 		}
 		if (hasEditedName) {
+			vector<string> names = this->fs->fileNames();
+			for (vector<string>::iterator i = names.begin(); i != names.end(); i++) {
+				if (*i == this->currentName) {
+					MessageBox("Duplicate Name", "Warning");
+					hasEditedName = false;
+					this->currentName = std::string();
+					return;
+				}
+			}
 			createFile(this->currentName);
 			fs->cteateNewFile(this->currentName);
 			hasEditedName = false;
+			this->currentName = std::string();
 		}
 	});
 	menu->addChild(newFile);
 	auto label2 = Label::createWithSystemFont("New File", "Arial", 18);
 	label2->setTextColor(Color4B::BLACK);
-	label2->setPosition(145, 640);
+	label2->setPosition(150, 630);
 	menu->addChild(label2);
 
 	auto openFolder = ui::Button::create("oFolder.png");
-	openFolder->setPosition(Vec2(47, 510));
+	openFolder->setTag(2);
+	openFolder->setEnabled(false);
+	openFolder->setPosition(Vec2(50, 510));
 	openFolder->addClickEventListener([&](Ref *psender) {
 		if (selected != NULL) {
 			int tag = selected->getTag();
@@ -161,7 +193,9 @@ void DirectoryScene::createMenu()
 	menu->addChild(label3);
 
 	auto openFile = ui::Button::create("oFile.png");
-	openFile->setPosition(Vec2(145, 510));
+	openFile->setTag(3);
+	openFile->setEnabled(false);
+	openFile->setPosition(Vec2(150, 510));
 	openFile->addClickEventListener([&](Ref *psender) {
 		if (selected != NULL) {
 			int tag = selected->getTag();
@@ -177,11 +211,13 @@ void DirectoryScene::createMenu()
 	menu->addChild(openFile);
 	auto label4 = Label::createWithSystemFont("Open\nFile", "Arial", 18);
 	label4->setTextColor(Color4B::BLACK);
-	label4->setPosition(145, 440);
+	label4->setPosition(150, 440);
 	menu->addChild(label4);
 
 	auto deleteFolder = ui::Button::create("dFolder.png");
-	deleteFolder->setPosition(Vec2(45, 360));
+	deleteFolder->setTag(4);
+	deleteFolder->setEnabled(false);
+	deleteFolder->setPosition(Vec2(50, 360));
 	deleteFolder->addClickEventListener([&](Ref *psender) {
 		if (selected != NULL) {
 			int tag = selected->getTag();
@@ -198,11 +234,13 @@ void DirectoryScene::createMenu()
 	menu->addChild(deleteFolder);
 	auto label5 = Label::createWithSystemFont("Delete\nFolder", "Arial", 18);
 	label5->setTextColor(Color4B::BLACK);
-	label5->setPosition(45, 290);
+	label5->setPosition(50, 290);
 	menu->addChild(label5);
 
 	auto deleteFile = ui::Button::create("dFile.png");
-	deleteFile->setPosition(Vec2(145, 360));
+	deleteFile->setTag(5);
+	deleteFile->setEnabled(false);
+	deleteFile->setPosition(Vec2(150, 360));
 	deleteFile->addClickEventListener([&](Ref *psender) {
 		if (selected != NULL) {
 			int tag = selected->getTag();
@@ -219,11 +257,11 @@ void DirectoryScene::createMenu()
 	menu->addChild(deleteFile);
 	auto label6 = Label::createWithSystemFont("Delete\n File", "Arial", 18);
 	label6->setTextColor(Color4B::BLACK);
-	label6->setPosition(145, 290);
+	label6->setPosition(150, 290);
 	menu->addChild(label6);
 
 	auto formatCurrent = ui::Button::create("clean.png");
-	formatCurrent->setPosition(Vec2(45, 210));
+	formatCurrent->setPosition(Vec2(50, 210));
 	formatCurrent->addClickEventListener([&](Ref *psender) {
 		this->fs->format(fs->current);
 		auto scene = DirectoryScene::createScene(this->fs);
@@ -232,11 +270,11 @@ void DirectoryScene::createMenu()
 	menu->addChild(formatCurrent);
 	auto label7 = Label::createWithSystemFont(" Clean \nCurrent", "Arial", 18);
 	label7->setTextColor(Color4B::BLACK);
-	label7->setPosition(45, 140);
+	label7->setPosition(50, 140);
 	menu->addChild(label7);
 
 	auto formatAll = ui::Button::create("cleanup.png");
-	formatAll->setPosition(Vec2(145, 210));
+	formatAll->setPosition(Vec2(150, 210));
 	formatAll->addClickEventListener([&](Ref *psender) {
 		this->fs->format(fs->root);
 		this->fs->current = this->fs->root;
@@ -246,11 +284,11 @@ void DirectoryScene::createMenu()
 	menu->addChild(formatAll);
 	auto label8 = Label::createWithSystemFont("Clean\n All", "Arial", 18);
 	label8->setTextColor(Color4B::BLACK);
-	label8->setPosition(145, 140);
+	label8->setPosition(150, 140);
 	menu->addChild(label8);
 
 	auto refresh = ui::Button::create("refresh.png");
-	refresh->setPosition(Vec2(45, 70));
+	refresh->setPosition(Vec2(50, 70));
 	refresh->addClickEventListener([&](Ref *psender) {
 		auto scene = DirectoryScene::createScene(this->fs);
 		Director::getInstance()->replaceScene(scene);
@@ -258,11 +296,11 @@ void DirectoryScene::createMenu()
 	menu->addChild(refresh);
 	auto label9 = Label::createWithSystemFont("Refresh", "Arial", 18);
 	label9->setTextColor(Color4B::BLACK);
-	label9->setPosition(45, 20 );
+	label9->setPosition(50, 20);
 	menu->addChild(label9);
 
 	auto back = ui::Button::create("return.png");
-	back->setPosition(Vec2(145, 70));
+	back->setPosition(Vec2(150, 70));
 	back->addClickEventListener([&](Ref *psender) {
 		if (fs->back() != NULL) {
 			fs->current = fs->back();
@@ -273,7 +311,7 @@ void DirectoryScene::createMenu()
 	menu->addChild(back);
 	auto label10 = Label::createWithSystemFont("Return", "Arial", 18);
 	label10->setTextColor(Color4B::BLACK);
-	label10->setPosition(145, 20);
+	label10->setPosition(150, 20);
 	menu->addChild(label10);
 
 	this->addChild(menu);
@@ -284,7 +322,7 @@ void DirectoryScene::createEditNameBox()
 {
 	editName = ui::EditBox::create(Size(160, 40), "edit.png");
 	editName->setFontName("Arial");
-	editName->setPosition(Vec2(100, 600));
+	editName->setPosition(Vec2(100, 590));
 	editName->setFontSize(18);
 	editName->setFontColor(Color4B::BLACK);
 	editName->setPlaceholderFontName("Arial");
@@ -327,11 +365,18 @@ void DirectoryScene::onMouseDown(Event *event)
 	int j = (x - 50) / 150;
 	if (i >= 5 || j >= 5) return;
 	if (content[i][j] != 0) {
-		if (selected != NULL) selected->setScale((float)0.80);
+		if (selected != NULL) selected->setScale((float)1);
 		int tag = j + 1 + i * 5;
 		Sprite *s = (Sprite*)getChildByTag(tag);
 		s->setScale(1.25);
 		selected = s;
+		if (content[i][j] == FOLDER) selectFolder();
+		else selectFile();
+	}
+	else {
+		if (selected != NULL) selected->setScale((float)1);
+		selected = NULL;
+		selectNothing();
 	}
 }
 
@@ -377,6 +422,39 @@ void DirectoryScene::createFile(std::string name)
 	}
 }
 
+void DirectoryScene::selectFolder()
+{
+	DrawNode *m = (DrawNode*)getChildByTag(0);
+	for (int i = 0; i < 6; i++) {
+		ui::Button *b = (ui::Button*)m->getChildByTag(i);
+		if (i < 2) b->setEnabled(false);
+		else if (i % 2 == 0) b->setEnabled(true);
+		else b->setEnabled(false);
+	}
+}
+
+void DirectoryScene::selectFile()
+{
+	DrawNode *m = (DrawNode*)getChildByTag(0);
+	for (int i = 0; i < 6; i++) {
+		ui::Button *b = (ui::Button*)m->getChildByTag(i);
+		if (i < 2) b->setEnabled(false);
+		else if (i % 2 == 1) b->setEnabled(true);
+		else b->setEnabled(false);
+	}
+}
+
+void DirectoryScene::selectNothing()
+{
+
+	DrawNode *m = (DrawNode*)getChildByTag(0);
+	for (int i = 0; i < 6; i++) {
+		ui::Button *b = (ui::Button*)m->getChildByTag(i);
+		if (i < 2) b->setEnabled(true);
+		else b->setEnabled(false);
+	}
+}
+
 void DirectoryScene::editBoxTextChanged(ui::EditBox * editBox, const std::string & text)
 {
 	this->currentName = text;
@@ -384,5 +462,5 @@ void DirectoryScene::editBoxTextChanged(ui::EditBox * editBox, const std::string
 
 void DirectoryScene::editBoxReturn(ui::EditBox * editBox)
 {
-	this->hasEditedName = true;
+	if(this->currentName != "")this->hasEditedName = true;
 }

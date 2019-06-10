@@ -27,6 +27,9 @@ public:
 	void onMouseDown(cocos2d::Event *event);
 	void createFolder(std::string name);
 	void createFile(std::string name);
+	void selectFolder();
+	void selectFile();
+	void selectNothing();
 	virtual void editBoxEditingDidBegin(cocos2d::ui::EditBox *editBox) {};						//开始编辑
 	virtual void editBoxTextChanged(cocos2d::ui::EditBox *editBox, const std::string& text);	//编辑框文字改变
 	virtual void editBoxReturn(cocos2d::ui::EditBox *editBox);									//结束编辑

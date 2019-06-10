@@ -8,7 +8,8 @@
 class EditScene : public cocos2d::Scene, cocos2d::ui::EditBoxDelegate
 {
 private:
-	string content;
+	string oldContent;
+	string editContent;
 	File *file;
 	FileSystem *fs;
 	cocos2d::ui::EditBox *editBox;
