@@ -8,11 +8,11 @@
 class EditScene : public cocos2d::Scene, cocos2d::ui::EditBoxDelegate
 {
 private:
-	string oldContent;
-	string editContent;
-	File *file;
-	FileSystem *fs;
-	cocos2d::ui::EditBox *editBox;
+	string oldContent;						//以往的内容
+	string editContent;						//编辑的内容
+	File *file;								//操作的文件
+	FileSystem *fs;							//文件管理系统
+	cocos2d::ui::EditBox *editBox;			//编辑框
 public:
 	static EditScene* createScene(FileSystem *fs, File *file);
 	virtual bool init();

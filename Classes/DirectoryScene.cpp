@@ -46,8 +46,7 @@ void DirectoryScene::enemyInit(FileSystem * fs)
 
 	initDirectory();
 	initFile();
-
-	
+	//路径显示
 	auto title = Label::createWithSystemFont(this->fs->getPath(), "Arial", 40);
 	title->setTextColor(Color4B::GRAY);
 	title->setPosition(400, 750);
@@ -61,6 +60,20 @@ void DirectoryScene::enemyInit(FileSystem * fs)
 
 	createMenu();
 
+	//帮助按钮
+	auto help = ui::Button::create("help.png");
+	help->setPosition(Vec2(960, 750));
+	help->addClickEventListener([&](Ref *pSender) {
+		if (!this->isHelping) {
+			auto introduce = Sprite::create("introduce.png");
+			introduce->setPosition(512, 384);
+			introduce->setTag(100);
+			this->addChild(introduce);
+			this->isHelping = true;
+		}
+	});
+	this->addChild(help);
+	//退出按钮
 	auto exit = ui::Button::create("exit.png");
 	exit->setPosition(Vec2(1004, 750));
 	exit->addClickEventListener([&](Ref *pSender) {
@@ -68,7 +81,7 @@ void DirectoryScene::enemyInit(FileSystem * fs)
 		std::exit(0);
 	});
 	this->addChild(exit);
-
+	//添加鼠标监听事件
 	auto dispatcher = Director::getInstance()->getEventDispatcher();
 	auto mouseListener = EventListenerMouse::create();
 	mouseListener->onMouseDown = CC_CALLBACK_1(DirectoryScene::onMouseDown, this);
@@ -109,7 +122,7 @@ void DirectoryScene::createMenu()
 	auto line = DrawNode::create();
 	line->drawLine(Vec2(824, 730), Vec2(1024, 730), Color4F::BLACK);
 	this->addChild(line);
-
+	//添加新建文件夹按钮
 	auto newFolder = ui::Button::create("nFolder.png");
 	newFolder->setTag(0);
 	newFolder->setPosition(Vec2(50, 690));
@@ -121,6 +134,7 @@ void DirectoryScene::createMenu()
 		if (hasEditedName) {
 			vector<string> names = this->fs->folderNames();
 			for (vector<string>::iterator i = names.begin(); i != names.end(); i++) {
+				//名字不能重复
 				if (*i == this->currentName) {
 					MessageBox("Duplicate Name", "Warning");
 					hasEditedName = false;
@@ -139,7 +153,7 @@ void DirectoryScene::createMenu()
 	label1->setTextColor(Color4B::BLACK);
 	label1->setPosition(50, 630);
 	menu->addChild(label1);
-
+	//添加新建文件按钮
 	auto newFile = ui::Button::create("nFile.png");
 	newFile->setTag(1);
 	newFile->setPosition(Vec2(150, 690));
@@ -169,7 +183,7 @@ void DirectoryScene::createMenu()
 	label2->setTextColor(Color4B::BLACK);
 	label2->setPosition(150, 630);
 	menu->addChild(label2);
-
+	//添加打开文件夹按钮
 	auto openFolder = ui::Button::create("oFolder.png");
 	openFolder->setTag(2);
 	openFolder->setEnabled(false);
@@ -191,7 +205,7 @@ void DirectoryScene::createMenu()
 	label3->setTextColor(Color4B::BLACK);
 	label3->setPosition(50, 440);
 	menu->addChild(label3);
-
+	//添加打开文件按钮
 	auto openFile = ui::Button::create("oFile.png");
 	openFile->setTag(3);
 	openFile->setEnabled(false);
@@ -213,7 +227,7 @@ void DirectoryScene::createMenu()
 	label4->setTextColor(Color4B::BLACK);
 	label4->setPosition(150, 440);
 	menu->addChild(label4);
-
+	//添加删除文件夹按钮
 	auto deleteFolder = ui::Button::create("dFolder.png");
 	deleteFolder->setTag(4);
 	deleteFolder->setEnabled(false);
@@ -236,7 +250,7 @@ void DirectoryScene::createMenu()
 	label5->setTextColor(Color4B::BLACK);
 	label5->setPosition(50, 290);
 	menu->addChild(label5);
-
+	//添加删除文件按钮
 	auto deleteFile = ui::Button::create("dFile.png");
 	deleteFile->setTag(5);
 	deleteFile->setEnabled(false);
@@ -259,7 +273,7 @@ void DirectoryScene::createMenu()
 	label6->setTextColor(Color4B::BLACK);
 	label6->setPosition(150, 290);
 	menu->addChild(label6);
-
+	//添加格式化当前目录按钮
 	auto formatCurrent = ui::Button::create("clean.png");
 	formatCurrent->setPosition(Vec2(50, 210));
 	formatCurrent->addClickEventListener([&](Ref *psender) {
@@ -272,7 +286,7 @@ void DirectoryScene::createMenu()
 	label7->setTextColor(Color4B::BLACK);
 	label7->setPosition(50, 140);
 	menu->addChild(label7);
-
+	//添加全部格式化按钮
 	auto formatAll = ui::Button::create("cleanup.png");
 	formatAll->setPosition(Vec2(150, 210));
 	formatAll->addClickEventListener([&](Ref *psender) {
@@ -286,7 +300,7 @@ void DirectoryScene::createMenu()
 	label8->setTextColor(Color4B::BLACK);
 	label8->setPosition(150, 140);
 	menu->addChild(label8);
-
+	//添加刷新按钮
 	auto refresh = ui::Button::create("refresh.png");
 	refresh->setPosition(Vec2(50, 70));
 	refresh->addClickEventListener([&](Ref *psender) {
@@ -298,7 +312,7 @@ void DirectoryScene::createMenu()
 	label9->setTextColor(Color4B::BLACK);
 	label9->setPosition(50, 20);
 	menu->addChild(label9);
-
+	//添加返回按钮
 	auto back = ui::Button::create("return.png");
 	back->setPosition(Vec2(150, 70));
 	back->addClickEventListener([&](Ref *psender) {
@@ -308,6 +322,8 @@ void DirectoryScene::createMenu()
 			Director::getInstance()->replaceScene(scene);
 		}
 	});
+	//若为根目录则不能返回
+	if (fs->current == fs->root) back->setEnabled(false);
 	menu->addChild(back);
 	auto label10 = Label::createWithSystemFont("Return", "Arial", 18);
 	label10->setTextColor(Color4B::BLACK);
@@ -315,6 +331,7 @@ void DirectoryScene::createMenu()
 	menu->addChild(label10);
 
 	this->addChild(menu);
+	//添加编辑框
 	createEditNameBox();
 }
 
@@ -338,7 +355,13 @@ void DirectoryScene::createEditNameBox()
 
 void DirectoryScene::onMouseDown(Event *event)
 {
+	if (this->isHelping) {
+		this->removeChildByTag(100);
+		this->isHelping = false;
+		return;
+	}
 	EventMouse *e = (EventMouse*)event;
+	//获取点击坐标
 	Vec2 point = e->getLocationInView();
 	/*if (e->getMouseButton() == EventMouse::MouseButton::BUTTON_RIGHT) {
 		if (isEditingName) return;
@@ -363,12 +386,28 @@ void DirectoryScene::onMouseDown(Event *event)
 	int y = point.y;
 	int i = (670 - y) / 150;
 	int j = (x - 50) / 150;
+	//点击界面外的事件不处理
 	if (i >= 5 || j >= 5) return;
+	//当前位置为空不处理
 	if (content[i][j] != 0) {
 		if (selected != NULL) selected->setScale((float)1);
 		int tag = j + 1 + i * 5;
 		Sprite *s = (Sprite*)getChildByTag(tag);
-		s->setScale(1.25);
+		//对选中物件放大
+		s->setScale(float(1.1));
+		//双击打开
+		if (s == selected) {
+			if (content[i][j] == FOLDER) {
+				fs->current = fs->current->searchFolder(selected->getName());
+				auto scene = DirectoryScene::createScene(this->fs);
+				Director::getInstance()->replaceScene(scene);
+			}
+			else {
+				File *file = fs->current->searchFile(selected->getName());
+				auto scene = EditScene::createScene(this->fs, file);
+				Director::getInstance()->replaceScene(scene);
+			}
+		}
 		selected = s;
 		if (content[i][j] == FOLDER) selectFolder();
 		else selectFile();
@@ -382,6 +421,7 @@ void DirectoryScene::onMouseDown(Event *event)
 
 void DirectoryScene::createFolder(std::string name)
 {
+	//选取空白区域进行创建
 	for (int i = 0; i < 5; i++) {
 		for (int j = 0; j < 5; j++) {
 			if (this->content[i][j] == 0) {
@@ -424,6 +464,7 @@ void DirectoryScene::createFile(std::string name)
 
 void DirectoryScene::selectFolder()
 {
+	//若选中文件夹则打开和删除文件按钮不可用
 	DrawNode *m = (DrawNode*)getChildByTag(0);
 	for (int i = 0; i < 6; i++) {
 		ui::Button *b = (ui::Button*)m->getChildByTag(i);
@@ -435,6 +476,7 @@ void DirectoryScene::selectFolder()
 
 void DirectoryScene::selectFile()
 {
+	//若选中文件则打开和删除文件夹不可用
 	DrawNode *m = (DrawNode*)getChildByTag(0);
 	for (int i = 0; i < 6; i++) {
 		ui::Button *b = (ui::Button*)m->getChildByTag(i);
@@ -446,7 +488,7 @@ void DirectoryScene::selectFile()
 
 void DirectoryScene::selectNothing()
 {
-
+	//取消选中特定物件可进行创建按钮
 	DrawNode *m = (DrawNode*)getChildByTag(0);
 	for (int i = 0; i < 6; i++) {
 		ui::Button *b = (ui::Button*)m->getChildByTag(i);

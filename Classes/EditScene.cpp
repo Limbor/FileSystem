@@ -32,7 +32,7 @@ void EditScene::enemyInit(FileSystem * fs, File *file)
 
 	auto background = LayerColor::create(Color4B::WHITE);
 	this->addChild(background);
-
+	//显示文件名
 	auto title = Label::createWithSystemFont(this->file->getName(), "Arial", 40);
 	title->setTextColor(Color4B::GRAY);
 	title->setPosition(512, 750);
@@ -43,7 +43,7 @@ void EditScene::enemyInit(FileSystem * fs, File *file)
 	auto line2 = DrawNode::create();
 	line2->drawLine(Vec2(0, 768), Vec2(1024, 768), Color4F::BLACK);
 	this->addChild(line2);
-
+	//添加编辑框
 	editContent = oldContent;
 	editBox = ui::EditBox::create(Size(800, 600), "editbox.png");
 	editBox->setText(oldContent.c_str());
@@ -60,10 +60,11 @@ void EditScene::enemyInit(FileSystem * fs, File *file)
 	hint->setTextColor(Color4B::GRAY);
 	hint->setPosition(450, 400);
 	this->addChild(hint);
-
+	//添加保存按钮
 	auto save = ui::Button::create("save.png");
 	save->setPosition(Vec2(950, 200));
 	save->addClickEventListener([&](Ref *psender) {
+		//将编辑后的内容写入文件
 		this->fs->setContent(this->file, this->editContent);
 		auto scene = DirectoryScene::createScene(this->fs);
 		Director::getInstance()->replaceScene(scene);
@@ -73,10 +74,11 @@ void EditScene::enemyInit(FileSystem * fs, File *file)
 	label1->setTextColor(Color4B::BLACK);
 	label1->setPosition(950, 140);
 	this->addChild(label1);
-
+	//添加取消按钮
 	auto cancel = ui::Button::create("cancel.png");
 	cancel->setPosition(Vec2(950, 70));
 	cancel->addClickEventListener([&](Ref *psender) {
+		//将以往的内容写入文件
 		this->fs->setContent(this->file, this->oldContent);
 		auto scene = DirectoryScene::createScene(this->fs);
 		Director::getInstance()->replaceScene(scene);

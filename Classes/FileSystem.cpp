@@ -6,6 +6,7 @@ FileSystem::FileSystem()
 {
 	this->root = new Directory("root", NULL);
 	this->current = root;
+	//恢复系统
 	readFile();
 }
 
@@ -70,6 +71,8 @@ void FileSystem::deleteFile(string name)
 
 void FileSystem::cleanDisk(Directory * parent)
 {
+	//使用层序遍历
+	//将所有子目录下的文件占用的内存块清空
 	queue<Directory*> directorys;
 	directorys.push(parent);
 	while (!directorys.empty()) {
@@ -118,6 +121,8 @@ vector<string> FileSystem::fileNames()
 
 string FileSystem::getContent(File * file)
 {
+	//将内存的字节信息转为字符串
+	//并清空原本的磁盘空间
 	string content;
 	int index = file->address;
 	while (index != -1) {
@@ -138,7 +143,9 @@ void FileSystem::setContent(File * file, string content)
 {
 	int index = file->address;
 	byte *b = (unsigned char*)content.c_str();
+	//占满的内存块数量
 	int size = (int)content.length() / (Disk::BlockSize - 4);
+	//剩余的字节信息大小
 	int remain = (int)content.length() % (Disk::BlockSize - 4);
 	for (int i = 0; i < size; i++) {
 		for (int j = 0; j < Disk::BlockSize - 4; j++) {
@@ -158,6 +165,9 @@ void FileSystem::setContent(File * file, string content)
 
 bool FileSystem::readFile()
 {
+	//以二进制方式读取文件
+	//按字节大小分块写入block结构体
+	//还原磁盘信息
 	ifstream fin("disk.dat", ios::binary);
 	if (!fin.is_open()) {
 		fin.close();
@@ -168,7 +178,7 @@ bool FileSystem::readFile()
 		fin.read((char *)(&block), sizeof(block));
 	}
 	fin.close();
-
+	//计算出文件中catalog结构体的数量
 	int catalogSize = sizeof(Catalog);
 	int fileSize = getFileSize();
 	if (fileSize == 0 || fileSize < catalogSize || (fileSize % catalogSize) != 0) {
@@ -176,13 +186,17 @@ bool FileSystem::readFile()
 	}
 	int count = fileSize / catalogSize;
 	fin = ifstream("file.dat", ios::binary);
+	//按层进行还原
 	queue<Directory*> directorys;
 	directorys.push(root);
 	for (int i = 0; i < count; i++) {
 		Directory *father = directorys.front();
 		Catalog catalog("", "", 0, 0);
 		fin.read((char*)(&catalog), sizeof(catalog));
+		//还原目录的catalog信息
 		if (catalog.type == 1) {
+			//如果当前结点不是即将写入目录的父节点
+			//取出队列中的第一个节点
 			if ((char*)catalog.father == father->getName()) {
 				father->createSubdirectory((char*)catalog.name);
 				Directory *current = father->searchFolder((char*)catalog.name);
@@ -196,6 +210,7 @@ bool FileSystem::readFile()
 				directorys.push(current);
 			}
 		}
+		//还原文件的catalog信息
 		else if (catalog.type == 2) {
 			if ((char*)catalog.father == father->getName()) {
 				father->cteateNewFile((char*)catalog.name, catalog.address);
@@ -232,6 +247,7 @@ int FileSystem::getFileSize()
 
 bool FileSystem::writeFile()
 {
+	//按二进制的方式将block结构体整体写入
 	ofstream fout("disk.dat", ios::binary);
 	if (!fout.is_open()) {
 		fout.close();
@@ -248,12 +264,15 @@ bool FileSystem::writeFile()
 		fout.close();
 		return false;
 	}
+	//使用层序遍历读取整个目录结构
 	queue<Directory*> directorys;
 	directorys.push(this->root);
 	while (!directorys.empty()) {
 		Directory *father = directorys.front();
 		directorys.pop();
 		Directory *current = father->child;
+		//通过构建catalog结构体储存信息
+		//以二进制写入文件
 		while (current != NULL) {
 			Catalog catalog(current->getName(), father->getName(), 1, -1);
 			fout.write((char *)(&catalog), sizeof(catalog));

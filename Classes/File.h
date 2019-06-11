@@ -8,11 +8,11 @@ using namespace std;
 class File
 {
 private:
-	string name;
-	int address;
-	int length;
+	string name;			//文件名
+	int address;			//文件地址
+	int length;				//文件大小
 
-	File *nextFile;
+	File *nextFile;			//文件链表指针
 public:
 	friend class Directory;
 	friend class FileSystem;

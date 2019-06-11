@@ -33,6 +33,8 @@ void Directory::cteateNewFile(string name, int address)
 
 void Directory::deleteSubdirectory(string name)
 {
+	//删除该文件夹后
+	//需要递归删除该目录的所有子目录
 	if (this->child->name == name) {
 		Directory *current = this->child;
 		this->child = current->sibling;
